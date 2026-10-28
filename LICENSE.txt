@@ -1,0 +1,7 @@
+Bộ skill edit video AI — Thiết Kế Web DC · Phát triển bởi Bùi Viết Cường
+
+1. Được dùng MIỄN PHÍ để làm video cho bản thân, khách hàng và doanh nghiệp của bạn (kể cả video thương mại).
+2. Được sửa cho phù hợp nhu cầu riêng.
+3. KHÔNG đóng gói bán lại hoặc chia sẻ như sản phẩm của bạn; khi chia sẻ lại phải giữ nguyên ghi công "Thiết Kế Web DC · Bùi Viết Cường" và giấy phép này.
+4. Font Montserrat đi kèm theo giấy phép SIL Open Font License 1.1 (xem skills/edit-kieu-so-sanh-fdown/fonts/OFL.txt).
+5. Phần mềm được cung cấp "nguyên trạng", không bảo hành. Dịch vụ bên thứ ba (Claude, Whisper…) theo điều khoản riêng của họ.

@@ -1,0 +1,16 @@
+{
+  "name": "v01",
+  "src": "/duong/dan/video-goc-4K.MP4",
+  "words": "/duong/dan/words_da_sua.json",
+  "work": "/duong/dan/thu-muc-lam-viec",
+  "avatar": "~/.claude/skills/edit-kieu-so-sanh-fdown/assets/avatar-giang-vien.png",
+  "segs": [[1.0, 32.1], [32.45, 57.3]],
+  "tag": "#Bùi Viết Cường",
+  "cover_len": 2.4,
+  "hook": ["DÒNG 1 TIÊU ĐỀ BÌA", "DÒNG 2", "DÒNG 3 (MÀU VÀNG)"],
+  "cta": {"main": "BÌNH LUẬN BÊN DƯỚI", "sub": "ĐỂ NHẬN FULL QUY TRÌNH", "dur": 4.5},
+  "pops_src": [
+    {"src": 16.4, "dur": 2.0, "lines": ["TỰ CẮT", "KHOẢNG LẶNG"], "size": 84}
+  ],
+  "out": "/duong/dan/ra/ten-video.mp4"
+}

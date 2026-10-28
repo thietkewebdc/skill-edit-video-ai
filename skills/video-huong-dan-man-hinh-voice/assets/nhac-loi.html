@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Màn hình nhắc lời 20s đầu</title>
+<style>
+  :root{--bg:#05080c;--fg:#f4f6f8;--dim:#4b5663;--hi:#F4C80F;--bar:#0B4C73}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Be Vietnam Pro","Segoe UI",Arial,sans-serif;overflow:hidden}
+  #stage{position:fixed;inset:0;display:flex;flex-direction:column}
+  #prompt{flex:1;display:flex;align-items:center;justify-content:center;padding:4vh 7vw}
+  #text{font-weight:700;line-height:1.38;text-align:center;font-size:var(--fs,6.2vw);max-width:100%;transition:transform .2s}
+  body.mirror #text{transform:scaleX(-1)}
+  .w{color:var(--dim);transition:color .12s}
+  .w.done{color:var(--fg)}
+  .w.now{color:var(--hi)}
+  #bar{height:10px;background:#111a22}
+  #fill{height:100%;width:0;background:var(--hi)}
+  #hud{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:12px 22px;background:var(--bar);font-size:15px}
+  #hud button{font:inherit;background:#0f6a9c;color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
+  #hud button:hover{background:#1583c0}
+  #time{font-variant-numeric:tabular-nums;font-weight:700;font-size:22px;min-width:92px}
+  #count{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-size:36vw;font-weight:800;color:var(--hi);background:rgba(5,8,12,.88)}
+  #edit{position:fixed;inset:0;display:none;flex-direction:column;gap:12px;padding:5vh 6vw;background:var(--bg)}
+  #edit textarea{flex:1;font:inherit;font-size:22px;background:#0d141b;color:var(--fg);border:1px solid #2a3846;border-radius:10px;padding:18px}
+  #info{color:#9fb4c4}
+  kbd{background:#0a3a58;border-radius:5px;padding:2px 7px;font-size:13px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="prompt"><div id="text"></div></div>
+  <div id="bar"><div id="fill"></div></div>
+  <div id="hud">
+    <span id="time">0:00 / 0:20</span>
+    <span id="info"></span>
+    <span>
+      <button id="go">▶ Bắt đầu (Space)</button>
+      <button id="rs">⟲ Về đầu (R)</button>
+      <button id="am">A−</button><button id="ap">A+</button>
+      <button id="dm">−1s</button><button id="dp">+1s</button>
+      <button id="mi">Lật gương (M)</button>
+      <button id="ed">Sửa lời (E)</button>
+    </span>
+  </div>
+</div>
+<div id="count"></div>
+<div id="edit">
+  <div id="info2" style="color:#9fb4c4">Sửa lời, mỗi lần bấm "Xong" màn hình nhắc sẽ nạp lại. Tốc độ đọc dễ chịu khoảng 2.6–3 chữ/giây.</div>
+  <textarea id="ta"></textarea>
+  <div><button id="ok" style="font:inherit;background:#0f6a9c;color:#fff;border:0;border-radius:8px;padding:10px 20px;cursor:pointer">Xong</button></div>
+</div>
+<script>
+const DEFAULT = "Bạn chưa từng dùng AI để tạo ảnh hay video? Không sao cả. Chỉ sau video này, bạn sẽ tự làm được những thứ như đang thấy trên màn hình, từ ảnh sản phẩm, video quảng cáo cho đến giọng đọc. Mình là Cường, và mình sẽ chỉ từng bước một, để ai xem cũng làm theo được.";
+const $=id=>document.getElementById(id);
+let DEFAULT_OVERRIDE, text, dur=20, fs=6.2, t0=0, raf=0, running=false, elapsed=0;
+const Q=new URLSearchParams(location.search); if(Q.get("t"))DEFAULT_OVERRIDE=Q.get("t"); if(Q.get("d"))dur=+Q.get("d");
+try{ text=Q.get("t")||localStorage.getItem("nhacloi20")||DEFAULT }catch(e){ text=Q.get("t")||DEFAULT }
+function build(){
+  const words=text.trim().split(/\s+/);
+  $("text").innerHTML=words.map(w=>`<span class="w">${w}</span>`).join(" ");
+  const n=words.length; $("info").textContent=`${n} chữ · ${(n/dur).toFixed(1)} chữ/giây`+(n/dur>3.2?" · NHANH, nên rút bớt":(n/dur<2.2?" · CHẬM, có thể thêm":" · vừa"));
+  paint(elapsed);
+}
+function fmt(s){return Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0")}
+function paint(e){
+  const ws=[...document.querySelectorAll(".w")], p=Math.min(1,e/dur), k=Math.floor(p*ws.length);
+  ws.forEach((w,i)=>{w.className="w"+(i<k?" done":(i===k&&e>0&&e<dur?" now":""))});
+  $("fill").style.width=(p*100)+"%"; $("time").textContent=fmt(e)+" / "+fmt(dur);
+}
+function tick(now){ elapsed=(now-t0)/1000; if(elapsed>=dur){elapsed=dur;stop();paint(dur);return} paint(elapsed); raf=requestAnimationFrame(tick) }
+function begin(){ stop(); elapsed=0; paint(0); let c=3; const el=$("count"); el.style.display="flex"; el.textContent=c;
+  const iv=setInterval(()=>{c--; if(c>0){el.textContent=c}else{clearInterval(iv); el.style.display="none"; running=true; $("go").textContent="■ Dừng (Space)"; t0=performance.now(); raf=requestAnimationFrame(tick)}},1000); cd=iv }
+let cd=0;
+function stop(){ cancelAnimationFrame(raf); clearInterval(cd); $("count").style.display="none"; running=false; $("go").textContent="▶ Bắt đầu (Space)" }
+function toggle(){ running||$("count").style.display==="flex" ? stop() : begin() }
+function reset(){ stop(); elapsed=0; paint(0) }
+function size(d){ fs=Math.max(3,Math.min(10,fs+d)); document.documentElement.style.setProperty("--fs",fs+"vw") }
+$("go").onclick=toggle; $("rs").onclick=reset; $("ap").onclick=()=>size(.6); $("am").onclick=()=>size(-.6);
+$("dp").onclick=()=>{dur++;build()}; $("dm").onclick=()=>{dur=Math.max(5,dur-1);build()};
+$("mi").onclick=()=>document.body.classList.toggle("mirror");
+$("ed").onclick=()=>{stop();$("ta").value=text;$("edit").style.display="flex"};
+$("ok").onclick=()=>{text=$("ta").value||DEFAULT;try{localStorage.setItem("nhacloi20",text)}catch(e){};$("edit").style.display="none";elapsed=0;build()};
+addEventListener("keydown",e=>{ if($("edit").style.display==="flex")return;
+  if(e.code==="Space"){e.preventDefault();toggle()} else if(e.key==="r"||e.key==="R")reset(); else if(e.key==="m"||e.key==="M")$("mi").click();
+  else if(e.key==="e"||e.key==="E")$("ed").click(); else if(e.key==="+"||e.key==="=")size(.6); else if(e.key==="-")size(-.6) });
+size(0); build();
+</script>
+</body>
+</html>
